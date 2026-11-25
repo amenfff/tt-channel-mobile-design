@@ -57,7 +57,15 @@
         secret, { name: 'AES-GCM', length: 256 }, false, ['decrypt']
       );
       const clear = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: data.subarray(24,36) }, aes, data.subarray(36));
-      const src = URL.createObjectURL(new Blob([clear], { type: 'text/html;charset=utf-8' }));
+      const anchorSupport = `<script>
+        document.addEventListener('click', e => {
+          const link = e.target.closest('a[href^="#"]');
+          if (!link) return;
+          const target = document.getElementById(link.getAttribute('href').slice(1));
+          if (target) { e.preventDefault(); target.scrollIntoView({ block: 'start' }); }
+        });</script>`;
+      const html = new TextDecoder().decode(clear).replace('</body>', anchorSupport + '</body>');
+      const src = URL.createObjectURL(new Blob([html], { type: 'text/html;charset=utf-8' }));
       const frame = document.createElement('iframe');
       frame.id = 'preview';
       frame.title = '移动端频道设计画板';
